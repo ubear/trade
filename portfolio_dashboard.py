@@ -8,6 +8,8 @@ from pathlib import Path
 
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
+PUSHDEER_KEY = os.environ.get("PUSHDEER_KEY", "")
+PUSHDEER_URL = f"https://api2.pushdeer.com/message/push?pushkey={PUSHDEER_KEY}&text=" if PUSHDEER_KEY else None
 HOLDINGS = Path(__file__).parent / "holdings.json"
 OUTPUT   = Path(__file__).parent / "data.json"
 
@@ -144,24 +146,31 @@ if __name__ == "__main__":
     print(f"✓ dashboard_data.json ({len(data['funds'])}只, {len(active)}只定投, {len(data['alerts'])}条告警)")
     print(f"  市值 ¥{data['total_value']:,.0f}  收益 {data['total_pnl_pct']*100:+.2f}%")
 
-    # Bark推送
-    if BARK_URL:
-        import urllib.parse as ulp
-        pnl_str = f"{data['total_pnl_pct']*100:+.2f}%"
-        summary = f"市值¥{data['total_value']:,.0f} 收益{pnl_str}"
-        if data["alerts"]:
-            alert_msgs = "\n".join(a["message"] for a in data["alerts"])
-            body = f"{summary}\n\n⚠️ 止盈告警:\n{alert_msgs}"
-            title = "📊 每日汇总·有告警"
-        else:
-            body = summary
-            title = "📊 每日汇总"
+    # 推送 (Bark + PushDeer)
+    import urllib.parse as ulp
+    pnl_str = f"{data['total_pnl_pct']*100:+.2f}%"
+    summary = f"市值¥{data['total_value']:,.0f} 收益{pnl_str}"
+    if data["alerts"]:
+        alert_msgs = "\n".join(a["message"] for a in data["alerts"])
+        body = f"{summary}\n\n⚠️ 止盈告警:\n{alert_msgs}"
+        title = "📊 每日汇总·有告警"
+    else:
+        body = summary
+        title = "📊 每日汇总"
+    
+    def try_push(label, url_func):
         try:
-            params = "sound=bell&isArchive=1"
-            if data["alerts"]:
-                params += "&level=critical&volume=5"
-            url = f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?{params}"
-            urllib.request.urlopen(urllib.request.Request(url), timeout=5)
-            print(f"  → Bark推送成功 ({'critical' if data['alerts'] else 'normal'})")
+            url_func()
+            print(f"  → {label}推送成功")
         except Exception as e:
-            print(f"  → Bark推送失败: {e}")
+            print(f"  → {label}推送失败: {e}")
+    
+    if BARK_URL:
+        params = "sound=bell&isArchive=1"
+        if data["alerts"]: params += "&level=critical&volume=5"
+        try_push("Bark", lambda: urllib.request.urlopen(urllib.request.Request(
+            f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?{params}"), timeout=5))
+    
+    if PUSHDEER_URL:
+        try_push("PushDeer", lambda: urllib.request.urlopen(urllib.request.Request(
+            PUSHDEER_URL + ulp.quote(f"{title}\n{body}", safe='')), timeout=5))

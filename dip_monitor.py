@@ -1,16 +1,15 @@
 #!/usr/bin/env python3
-"""
-大跌监控 + Bark推送
+"""大跌监控 + Bark/PushDeer双推送
 每天14:50运行, 检查指数/基金是否触发补仓阈值
 用法: python3 dip_monitor.py [--dry-run]
-      配置: 设置环境变量 BARK_KEY (Bark App -> 右上角+ -> 复制Key)
+配置: BARK_KEY + PUSHDEER_KEY 环境变量
 """
-import json, urllib.request, os, sys, datetime, time
+import json, urllib.request, os, sys, datetime, time, urllib.parse as ulp
 
-# ======= 配置 ==========
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
-
+PUSHDEER_KEY = os.environ.get("PUSHDEER_KEY", "")
+PUSHDEER_URL = f"https://api2.pushdeer.com/message/push?pushkey={PUSHDEER_KEY}&text=" if PUSHDEER_KEY else None
 # 基金→指数映射 + 大跌阈值
 FUNDS = {
     "恒科":       (100, "124.HSTECH",   -5.0, "replace", "live"),
@@ -110,25 +109,24 @@ def main():
             alerts.append(msg)
             continue
         
-    
-    if not alerts:
-        print(f"[{ts}] 无触发")
-        return
-    
-    print(f"[{ts}] 触发 {len(alerts)} 只:")
-    for a in alerts:
-        print(f"  {a}")
-    
     # Bark推送
     if BARK_URL and not dry:
-        title = f"📉 定投监控 {ts}"
-        body = "\n".join(alerts)
         try:
-            url = f"{BARK_URL}{urllib.parse.quote(title, safe='')}/{urllib.parse.quote(body, safe='')}?sound=bell&isArchive=1"
+            url = f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?sound=bell&isArchive=1"
             urllib.request.urlopen(urllib.request.Request(url), timeout=5)
             print("  → Bark已推送")
         except Exception as e:
-            print(f"  → Bark推送失败: {e}")
+            print(f"  → Bark失败: {e}")
+    
+    # PushDeer推送
+    if PUSHDEER_URL and not dry:
+        try:
+            text = f"{title}\n{body}"
+            url = PUSHDEER_URL + ulp.quote(text, safe='')
+            urllib.request.urlopen(urllib.request.Request(url), timeout=5)
+            print("  → PushDeer已推送")
+        except Exception as e:
+            print(f"  → PushDeer失败: {e}")
     elif dry:
         print("  [dry-run] 跳过推送")
 
