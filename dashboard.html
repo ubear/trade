@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>投资仪表盘</title>
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="/trade/manifest.json">
 <meta name="theme-color" content="#0f1117">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -70,11 +70,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; bac
 <div class="card" id="fundsCard"></div>
 
 <script>
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/trade/sw.js');
 
 async function load() {
   try {
-    const resp = await fetch('dashboard_data.json?t=' + Date.now());
+    const resp = await fetch('/trade/dashboard_data.json?t=' + Date.now());
     const data = await resp.json();
     render(data);
   } catch(e) {
