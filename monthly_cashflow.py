@@ -33,37 +33,23 @@ HOLIDAYS_2026 = {
     datetime.date(2026, 10, 5), datetime.date(2026, 10, 6),
     datetime.date(2026, 10, 7), datetime.date(2026, 10, 8),
 }
-# 换休工作日（周末补班, A股开市）
-WORK_SATURDAYS_2026 = {
-    datetime.date(2026, 2, 14),  # 春节前补班
-    datetime.date(2026, 2, 28),  # 春节后补班
-    datetime.date(2026, 5, 9),   # 劳动节补班
-    datetime.date(2026, 9, 20),  # 中秋补班
-    datetime.date(2026, 10, 10), # 国庆补班
-}
 
-def is_trading_day(date, holidays, work_saturdays):
-    if date in holidays: return False
-    if date in work_saturdays: return True
-    return date.weekday() < 5
+
 
 def compute(year):
     holidays = HOLIDAYS_2026 if year == 2026 else set()
-    ws = WORK_SATURDAYS_2026 if year == 2026 else set()
     result = []
     for m in range(1, 13):
         fridays = 0; thursdays = 0; total_days = 0
         for d in range(1, calendar.monthrange(year, m)[1] + 1):
             dt = datetime.date(year, m, d)
-            if is_trading_day(dt, holidays, ws):
+            if dt not in holidays and dt.weekday() < 5:
                 total_days += 1
                 if dt.weekday() == 4: fridays += 1
                 if dt.weekday() == 3: thursdays += 1
         monthly = fridays * FRIDAY_DCA + thursdays * THURSDAY_DCA + total_days * DAILY_DCA
         result.append((m, total_days, fridays, thursdays, monthly))
     return result
-
-# ===== 输出 =====
 year = int(sys.argv[1]) if len(sys.argv) > 1 else datetime.date.today().year
 data = compute(year)
 
