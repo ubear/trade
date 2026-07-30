@@ -75,6 +75,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('/trade/sw.js
 // data embedded at build time — no async needed
 const data = __DATA_PLACEHOLDER__;
 
+render(data);
 function pct(v) {
   if (v == null) return '--';
   return (v * 100).toFixed(1) + '%';
