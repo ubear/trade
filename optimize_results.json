@@ -1,0 +1,262 @@
+{
+  "中证A500联接A": {
+    "name": "中证A500联接A",
+    "code": "022430",
+    "days": 419,
+    "vol": 0.1808,
+    "max_dd": 0.3444,
+    "avg_recovery_days": 2.0,
+    "tp_p25": 0,
+    "tp_p50": 0,
+    "tp_p75": 0,
+    "tp_recommend": [
+      10,
+      15,
+      25
+    ],
+    "dip_p10": 0.0164,
+    "dip_p25": 0.0206,
+    "dip_p50": 0.0261,
+    "dip_recommend": [
+      2.1,
+      2.6,
+      3.6
+    ],
+    "rolling_peaks_count": 0,
+    "dd_events_count": 7
+  },
+  "A股红利低波ETF联接A": {
+    "name": "A股红利低波ETF联接A",
+    "code": "020602",
+    "days": 579,
+    "vol": 0.1455,
+    "max_dd": 0.1994,
+    "avg_recovery_days": 35.0,
+    "tp_p25": 0.0685,
+    "tp_p50": 0.0846,
+    "tp_p75": 0.1185,
+    "tp_recommend": [
+      10,
+      15,
+      25
+    ],
+    "dip_p10": 0.0157,
+    "dip_p25": 0.0179,
+    "dip_p50": 0.0383,
+    "dip_recommend": [
+      1.8,
+      3.8,
+      4.8
+    ],
+    "rolling_peaks_count": 16,
+    "dd_events_count": 12
+  },
+  "摩根标普港股通低波红利ETF联接A": {
+    "name": "摩根标普港股通低波红利ETF联接A",
+    "code": "024772",
+    "days": 202,
+    "vol": 0.126,
+    "max_dd": 0.1202,
+    "avg_recovery_days": 23,
+    "tp_p25": 0,
+    "tp_p50": 0,
+    "tp_p75": 0,
+    "tp_recommend": [
+      10,
+      15,
+      25
+    ],
+    "dip_p10": 0.0178,
+    "dip_p25": 0.0188,
+    "dip_p50": 0.0425,
+    "dip_recommend": [
+      1.9,
+      4.3,
+      5.3
+    ],
+    "rolling_peaks_count": 0,
+    "dd_events_count": 6
+  },
+  "恒生科技联接A": {
+    "name": "恒生科技联接A",
+    "code": "013127",
+    "days": 1153,
+    "vol": 0.349,
+    "max_dd": 0.5255,
+    "avg_recovery_days": 24.0,
+    "tp_p25": 0.1036,
+    "tp_p50": 0.2257,
+    "tp_p75": 0.3808,
+    "tp_recommend": [
+      10,
+      25,
+      40
+    ],
+    "dip_p10": 0.0236,
+    "dip_p25": 0.0306,
+    "dip_p50": 0.0462,
+    "dip_recommend": [
+      3.1,
+      4.6,
+      5.6
+    ],
+    "rolling_peaks_count": 128,
+    "dd_events_count": 13
+  },
+  "创新药精选50ETF联接A": {
+    "name": "创新药精选50ETF联接A",
+    "code": "014564",
+    "days": 1017,
+    "vol": 0.2835,
+    "max_dd": 0.5243,
+    "avg_recovery_days": 27.0,
+    "tp_p25": 0.1083,
+    "tp_p50": 0.2169,
+    "tp_p75": 0.4052,
+    "tp_recommend": [
+      10,
+      20,
+      40
+    ],
+    "dip_p10": 0.0193,
+    "dip_p25": 0.0221,
+    "dip_p50": 0.0454,
+    "dip_recommend": [
+      2.2,
+      4.5,
+      5.5
+    ],
+    "rolling_peaks_count": 102,
+    "dd_events_count": 11
+  },
+  "科创创业50联接A": {
+    "name": "科创创业50联接A",
+    "code": "013304",
+    "days": 1191,
+    "vol": 0.2856,
+    "max_dd": 0.7132,
+    "avg_recovery_days": 3.0,
+    "tp_p25": 0.0668,
+    "tp_p50": 0.1724,
+    "tp_p75": 0.5301,
+    "tp_recommend": [
+      10,
+      15,
+      55
+    ],
+    "dip_p10": 0.0196,
+    "dip_p25": 0.0251,
+    "dip_p50": 0.0578,
+    "dip_recommend": [
+      2.5,
+      5.8,
+      6.8
+    ],
+    "rolling_peaks_count": 129,
+    "dd_events_count": 5
+  },
+  "建信纳斯达克100A": {
+    "name": "建信纳斯达克100A",
+    "code": "539001",
+    "days": 3672,
+    "vol": 0.1708,
+    "max_dd": 0.788,
+    "avg_recovery_days": 3.0,
+    "tp_p25": 0.0192,
+    "tp_p50": 0.0502,
+    "tp_p75": 0.1159,
+    "tp_recommend": [
+      10,
+      15,
+      25
+    ],
+    "dip_p10": 0.0149,
+    "dip_p25": 0.0174,
+    "dip_p50": 0.0232,
+    "dip_recommend": [
+      1.7,
+      2.3,
+      3.3
+    ],
+    "rolling_peaks_count": 566,
+    "dd_events_count": 7
+  },
+  "广发全球医疗A": {
+    "name": "广发全球医疗A",
+    "code": "000369",
+    "days": 3028,
+    "vol": 0.1381,
+    "max_dd": 0.6174,
+    "avg_recovery_days": 65,
+    "tp_p25": 0.0201,
+    "tp_p50": 0.0465,
+    "tp_p75": 0.089,
+    "tp_recommend": [
+      10,
+      15,
+      25
+    ],
+    "dip_p10": 0.0145,
+    "dip_p25": 0.0205,
+    "dip_p50": 0.0475,
+    "dip_recommend": [
+      2.0,
+      4.8,
+      5.8
+    ],
+    "rolling_peaks_count": 471,
+    "dd_events_count": 6
+  },
+  "易方达蓝筹精选(张坤)": {
+    "name": "易方达蓝筹精选(张坤)",
+    "code": "005827",
+    "days": 1892,
+    "vol": 0.2376,
+    "max_dd": 0.7393,
+    "avg_recovery_days": 33.0,
+    "tp_p25": 0.2072,
+    "tp_p50": 0.3685,
+    "tp_p75": 0.5348,
+    "tp_recommend": [
+      20,
+      35,
+      55
+    ],
+    "dip_p10": 0.0136,
+    "dip_p25": 0.0205,
+    "dip_p50": 0.0287,
+    "dip_recommend": [
+      2.1,
+      2.9,
+      3.9
+    ],
+    "rolling_peaks_count": 273,
+    "dd_events_count": 45
+  },
+  "南方纳斯达克100指数A": {
+    "name": "南方纳斯达克100指数A",
+    "code": "016452",
+    "days": 863,
+    "vol": 0.1925,
+    "max_dd": 0.589,
+    "avg_recovery_days": 3.0,
+    "tp_p25": 0.0173,
+    "tp_p50": 0.0365,
+    "tp_p75": 0.0722,
+    "tp_recommend": [
+      10,
+      15,
+      25
+    ],
+    "dip_p10": 0.0106,
+    "dip_p25": 0.0183,
+    "dip_p50": 0.024,
+    "dip_recommend": [
+      1.8,
+      2.4,
+      3.4
+    ],
+    "rolling_peaks_count": 65,
+    "dd_events_count": 8
+  }
+}

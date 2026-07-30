@@ -1,26 +1,24 @@
 #!/usr/bin/env python3
-"""
-大跌监控 + Bark推送
+"""大跌监控 + Bark/PushDeer双推送
 每天14:50运行, 检查指数/基金是否触发补仓阈值
 用法: python3 dip_monitor.py [--dry-run]
-      配置: 设置环境变量 BARK_KEY (Bark App -> 右上角+ -> 复制Key)
+配置: BARK_KEY + PUSHDEER_KEY 环境变量
 """
-import json, urllib.request, os, sys, datetime, time
+import json, urllib.request, os, sys, datetime, time, urllib.parse as ulp
 
-# ======= 配置 ==========
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
-
+SERVERCHAN_KEY = os.environ.get("SERVERCHAN_KEY", "")
+SERVERCHAN_URL = f"https://sctapi.ftqq.com/{SERVERCHAN_KEY}.send" if SERVERCHAN_KEY else None
 # 基金→指数映射 + 大跌阈值
 FUNDS = {
-    # (定投金额, 指数secid, 阈值%, 模式, 数据时效)
-    # 模式: replace=替代周五(A股/HK), extra=额外加仓, none=不提醒
-    # 时效: live=盘中实时可操作, overnight=基于前夜收盘(T-1)
-    "恒科":       (100, "124.HSTECH",   -2.0, "replace", "live"),
-    "创新药":     (100, None,           -2.0, "replace", "live"),
-    "张坤":       (10,  None,           -1.0, "replace", "live"),
-    "红利低波":   (100, "2.H30269",     -2.0, "extra",   "live"),
-    # QDII全部日限额触顶, 无额外加仓空间
+    "恒科":       (100, "124.HSTECH",   -5.0, "replace", "live"),
+    "创新药":     (100, None,           -4.0, "replace", "live"),
+    "红利低波":   (100, "2.H30269",     -4.0, "extra",   "live"),
+    # 港股红利: 数据仅200天暂不自动推送, 手动检查
+    # A500/科创创业50: 不补(频率低/恢复快)
+    # QDII: 限额触顶
+    # 张坤: 出清目标不补
 }
 
 # ======= 指数实时行情 ==========
@@ -65,8 +63,7 @@ def fetch_fund_latest(code):
 
 # ======= 基金代码映射 ==========
 FUND_CODES = {
-    "恒科": "013127", "创新药": "014564", "张坤": "005827",
-    "南方纳指": "016452", "广发医疗": "000369", "建信纳指": "539001", "红利低波": "020602",
+    "恒科": "013127", "创新药": "014564", "红利低波": "020602",
 }
 
 # ======= 主逻辑 ==========
@@ -112,25 +109,22 @@ def main():
             alerts.append(msg)
             continue
         
-    
-    if not alerts:
-        print(f"[{ts}] 无触发")
-        return
-    
-    print(f"[{ts}] 触发 {len(alerts)} 只:")
-    for a in alerts:
-        print(f"  {a}")
-    
     # Bark推送
     if BARK_URL and not dry:
-        title = f"📉 定投监控 {ts}"
-        body = "\n".join(alerts)
         try:
-            url = f"{BARK_URL}{urllib.parse.quote(title, safe='')}/{urllib.parse.quote(body, safe='')}?sound=bell&isArchive=1"
+            url = f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?sound=bell&isArchive=1"
             urllib.request.urlopen(urllib.request.Request(url), timeout=5)
             print("  → Bark已推送")
         except Exception as e:
-            print(f"  → Bark推送失败: {e}")
+            print(f"  → Bark失败: {e}")
+    # Server酱推送
+    if SERVERCHAN_URL and not dry:
+        try:
+            data = ulp.urlencode({"title": title, "desp": body}).encode()
+            urllib.request.urlopen(urllib.request.Request(SERVERCHAN_URL, data=data), timeout=5)
+            print("  → Server酱已推送")
+        except Exception as e:
+            print(f"  → Server酱失败: {e}")
     elif dry:
         print("  [dry-run] 跳过推送")
 
