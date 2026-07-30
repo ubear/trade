@@ -1,5 +1,5 @@
 const CACHE = 'portfolio-v1';
-const FILES = ['/dashboard.html', '/dashboard_data.json', '/manifest.json', '/'];
+const FILES = ['/trade/dashboard.html', '/trade/dashboard_data.json', '/trade/manifest.json', '/trade/'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).catch(() => {}));
