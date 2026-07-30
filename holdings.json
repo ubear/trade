@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-30 Plan F v6 止盈阈值优化(历史回测数据驱动)",
+  "updated": "2026-07-30 Plan F v6 + Server酱推送",
   "说明": "shares/avg_cost从支付宝持仓页抄写填入后计算最准。未填时用fallback_value+fallback_pnl按最新净值反推(估算)。dca_daily=每日定投金额,tp=三档止盈阈值,tp_stage=已触发批次(0=未触发)。",
   "funds": [
     {
