@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>投资仪表盘</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0f1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="投资仪表盘">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f1117'/><text x='50' y='62' text-anchor='middle' fill='%234f8ff7' font-size='48' font-family='sans-serif'>📊</text></svg>">
+<style>
+:root {
+  --bg: #0f1117; --card: #1a1d27; --border: #2a2d37;
+  --text: #e1e4ea; --muted: #7f8492; --accent: #4f8ff7;
+  --green: #34d399; --red: #f87171; --orange: #fbbf24;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; background: var(--bg); color: var(--text); padding: 16px; max-width: 480px; margin: 0 auto; min-height: 100vh; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header .updated { font-size: 12px; color: var(--muted); }
+.card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+.summary { display: flex; justify-content: space-between; gap: 12px; }
+.summary-item { flex:1; text-align:center; }
+.summary-item .label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.summary-item .value { font-size: 22px; font-weight: 700; }
+.summary-item .sub { font-size: 13px; margin-top: 2px; }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+.warning { color: var(--orange); }
+.fund-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+.fund-row:last-child { border: none; }
+.fund-info { flex: 1; min-width: 0; }
+.fund-name { font-size: 14px; font-weight: 600; }
+.fund-meta { font-size: 11px; color: var(--muted); }
+.fund-nav { text-align: right; min-width: 56px; }
+.fund-nav .nav { font-size: 14px; }
+.fund-nav .change { font-size: 12px; }
+.fund-tp { text-align: right; min-width: 64px; font-size: 12px; }
+.tp-badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; }
+.tp-badge.safe { background: #1a2a1a; color: var(--green); }
+.tp-badge.close { background: #2a1a1a; color: var(--red); }
+.tp-badge.warn { background: #2a2010; color: var(--orange); }
+.alert { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
+.alert.danger { background: #2a1a1a; border: 1px solid #4a2020; color: var(--red); }
+.alert.info { background: #1a202a; border: 1px solid #202a4a; color: var(--accent); }
+.allocation { display: flex; gap: 8px; margin-top: 12px; }
+.bucket-bar { height: 8px; border-radius: 4px; flex: none; }
+.bucket-legend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+.bucket-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.defense { background: var(--green); }
+.attack { background: var(--red); }
+.neutral { background: var(--accent); }
+.refresh { font-size: 12px; color: var(--accent); cursor: pointer; }
+.empty { text-align: center; color: var(--muted); padding: 20px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 投资仪表盘</h1>
+  <span class="updated" id="updateTime">--</span>
+</div>
+
+<div class="card" id="summaryCard"></div>
+<div class="card" id="allocationCard"></div>
+<div class="card" id="alertsCard" style="display:none"></div>
+<div class="card" id="fundsCard"></div>
+
+<script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+
+async function load() {
+  try {
+    const resp = await fetch('dashboard_data.json');
+    const data = await resp.json();
+    render(data);
+  } catch(e) {
+    document.getElementById('fundsCard').innerHTML = '<div class="empty">数据加载失败 — 运行 python3 portfolio_dashboard.py 生成数据</div>';
+  }
+}
+
+function pct(v) {
+  if (v == null) return '--';
+  return (v * 100).toFixed(1) + '%';
+}
+
+function money(v) {
+  if (!v || v === 0) return '--';
+  if (v >= 10000) return '¥' + (v / 10000).toFixed(1) + '万';
+  return '¥' + v.toLocaleString();
+}
+
+function render(data) {
+  document.getElementById('updateTime').textContent = '更新 ' + data.updated;
+
+  // ---- 总览 ----
+  const totalV = data.total_value || 0;
+  const totalPnl = data.total_pnl_pct || 0;
+  const pnlClass = totalPnl >= 0 ? 'positive' : 'negative';
+  document.getElementById('summaryCard').innerHTML = `
+    <div class="summary">
+      <div class="summary-item">
+        <div class="label">总市值</div>
+        <div class="value">${money(totalV)}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">总收益</div>
+        <div class="value ${pnlClass}">${totalPnl >= 0 ? '+' : ''}${pct(totalPnl)}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">日定投</div>
+        <div class="value">¥${data.dca_daily_total}</div>
+        <div class="sub">${data.funds.filter(f => f.dca_daily > 0).length}只定投中</div>
+      </div>
+    </div>`;
+
+  // ---- 配置 (攻/防) ----
+  const dcaFunds = data.funds.filter(f => f.dca_daily > 0);
+  // 分类: 科技进攻 vs 红利/宽基/医疗防御
+  const attackNames = ['恒生科技','创新药','科创创业50','建信纳斯达克','南方纳指','天弘科创'];
+  const defenseNames = ['中证A500','红利低波','港股通低波红利','广发全球医疗'];
+  let attackAmt = 0, defenseAmt = 0;
+  dcaFunds.forEach(f => {
+    const isAttack = attackNames.some(n => f.name.includes(n));
+    if (isAttack) attackAmt += f.dca_daily; else defenseAmt += f.dca_daily;
+  });
+  const totalDcaAmt = attackAmt + defenseAmt || 1;
+  const attackPct = Math.round(attackAmt / totalDcaAmt * 100);
+  const defensePct = 100 - attackPct;
+  document.getElementById('allocationCard').innerHTML = `
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">DCA配置</div>
+    <div class="allocation">
+      <div class="bucket-bar attack" style="width:${attackPct}%"></div>
+      <div class="bucket-bar defense" style="width:${defensePct}%"></div>
+    </div>
+    <div class="bucket-legend">
+      <span><span class="bucket-dot attack"></span>进攻 ${attackPct}%</span>
+      <span><span class="bucket-dot defense"></span>防御 ${defensePct}%</span>
+    </div>`;
+
+  // ---- 告警 ----
+  const alertsDiv = document.getElementById('alertsCard');
+  if (data.alerts && data.alerts.length > 0) {
+    alertsDiv.style.display = 'block';
+    alertsDiv.innerHTML = data.alerts.map(a => 
+      `<div class="alert ${a.type === 'tp_close' ? 'danger' : 'info'}">⚠️ ${a.message}</div>`
+    ).join('');
+  } else {
+    alertsDiv.style.display = 'none';
+  }
+
+  // ---- 基金列表 ----
+  const activeFunds = data.funds.filter(f => f.dca_daily > 0 || f.value > 0);
+  const rows = activeFunds.map(f => {
+    const dc = f.day_change || 0;
+    const dcClass = dc >= 0 ? 'positive' : 'negative';
+    const pnl = f.pnl_pct;
+    const pnlClass = pnl != null ? (pnl >= 0 ? 'positive' : 'negative') : '';
+    // 止盈状态
+    let tpHtml = '';
+    if (f.tp_next != null) {
+      const dist = f.tp_distance;
+      let tpClass = 'safe';
+      if (dist != null && dist <= 0.05) tpClass = 'close';
+      else if (dist != null && dist <= 0.10) tpClass = 'warn';
+      const tpLabel = f.tp_mode === 'full' ? '清仓' : '止盈';
+      const distStr = dist != null ? `距${tpLabel}${(dist*100).toFixed(1)}%` : '';
+      tpHtml = `<span class="tp-badge ${tpClass}">${tpLabel}+${(f.tp_next*100).toFixed(0)}% ${distStr}</span>`;
+    }
+    return `<div class="fund-row">
+      <div class="fund-info">
+        <div class="fund-name">${f.name}</div>
+        <div class="fund-meta">${f.nav_date} · ${f.volatility ? '波动'+(f.volatility*100).toFixed(0)+'%' : ''}${f.bucket ? ' · '+f.bucket : ''}</div>
+      </div>
+      <div class="fund-nav">
+        <div class="nav">${f.nav > 1 ? f.nav.toFixed(4) : '--'}</div>
+        <div class="change ${dcClass}">${dc >= 0 ? '+' : ''}${pct(dc)}</div>
+      </div>
+      <div class="fund-tp">
+        ${pnl != null ? `<div class="${pnlClass}" style="font-size:14px">${pnl >= 0 ? '+' : ''}${pct(pnl)}</div>` : '<div style="font-size:12px;color:var(--muted)">--</div>'}
+        ${tpHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('fundsCard').innerHTML = `
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">持仓明细</div>
+    ${rows || '<div class="empty">从支付宝填入 shares/avg_cost 后显示真实持仓数据</div>'}
+    <div class="empty" style="font-size:11px">💡 在 holdings.json 中填入每只基金的 shares 和 avg_cost 即可看到精确收益</div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>

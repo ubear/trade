@@ -1,0 +1,258 @@
+{
+  "updated": "2026-07-30 Plan F v5.4 存量止盈+10%全卖(易方达全球成长+25%)",
+  "说明": "shares/avg_cost从支付宝持仓页抄写填入后计算最准。未填时用fallback_value+fallback_pnl按最新净值反推(估算)。dca_daily=每日定投金额,tp=三档止盈阈值,tp_stage=已触发批次(0=未触发)。",
+  "funds": [
+    {
+      "name": "中证A500联接A",
+      "code": "022430",
+      "bucket": "核心",
+      "dca_daily": 200,
+      "tp": null,
+      "tp_stage": 0,
+      "note": "周五+涨跌幅(回测+72bp)。止盈:永不止盈。大跌补仓:不操作",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "A股红利低波ETF联接A",
+      "code": "020602",
+      "bucket": "红利",
+      "dca_daily": 100,
+      "tp": [
+        0.1,
+        0.2,
+        0.3
+      ],
+      "tp_stage": 0,
+      "note": "周五+均线(回测+53bp)。止盈:10/20/30%。大跌补仓:额外-2%",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "摩根标普港股通低波红利ETF联接A",
+      "code": "024772",
+      "bucket": "红利",
+      "dca_daily": 100,
+      "tp": [
+        0.1,
+        0.15,
+        0.25
+      ],
+      "tp_stage": 0,
+      "fallback_value": 29762,
+      "fallback_pnl": 0.0,
+      "note": "周五+均线(回测+15bp弱)。止盈:10/15/25%。大跌补仓:待验证替代-2%",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "恒生科技联接A",
+      "code": "013127",
+      "bucket": "科技",
+      "dca_daily": 100,
+      "tp": [
+        0.2,
+        0.4,
+        0.6
+      ],
+      "tp_stage": 0,
+      "note": "周五(回测+30bp)。止盈:20/40/60%。大跌补仓:替代周五-2%",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "创新药精选50ETF联接A",
+      "code": "014564",
+      "bucket": "科技",
+      "dca_daily": 100,
+      "tp": [
+        0.2,
+        0.4,
+        0.8
+      ],
+      "tp_stage": 0,
+      "note": "周四+涨跌幅(回测+29bp最优)。止盈:20/40/80%。大跌补仓:替代周五-2%",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "科创创业50联接A",
+      "code": "013304",
+      "bucket": "科技",
+      "dca_daily": 100,
+      "tp": [
+        0.25,
+        0.5,
+        0.8
+      ],
+      "tp_stage": 0,
+      "note": "周五+涨跌幅(回测+42bp)。止盈:25/50/80%。大跌补仓:不操作",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "建信纳斯达克100A",
+      "code": "539001",
+      "bucket": "海外",
+      "dca_daily": 100,
+      "tp": [
+        0.15,
+        0.25,
+        0.35
+      ],
+      "tp_stage": 0,
+      "note": "日定投(QDII)。止盈:15/25/35%。大跌补仓:不操作(限额满)",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "博时标普500ETF联接A",
+      "code": "050025",
+      "bucket": "海外",
+      "dca_daily": 0,
+      "tp": [
+        0.25,
+        0.45,
+        0.65
+      ],
+      "tp_stage": 0,
+      "note": "🔴支付宝实测无额度，已从定投清单移除",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "华夏纳斯达克100联接A",
+      "code": "015299",
+      "bucket": "海外",
+      "dca_daily": 0,
+      "tp": [
+        0.25,
+        0.45,
+        0.65
+      ],
+      "tp_stage": 0,
+      "note": "🔴2026-07-30支付宝实测无额度，已从定投清单移除",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "广发全球医疗A",
+      "code": "000369",
+      "bucket": "海外",
+      "dca_daily": 100,
+      "tp": [
+        0.15,
+        0.2,
+        0.25
+      ],
+      "tp_stage": 0,
+      "note": "日定投(QDII)。止盈:15/20/25%。大跌补仓:不操作(限额满)",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "易方达蓝筹精选(张坤)",
+      "code": "005827",
+      "bucket": "存量",
+      "dca_daily": 10,
+      "tp": [
+        0.1
+      ],
+      "tp_stage": 0,
+      "note": "日定投。止盈:+10%全卖。大跌补仓:替代周五-1%",
+      "tp_mode": "full"
+    },
+    {
+      "name": "中欧红利优享A",
+      "code": "004814",
+      "bucket": "零定投存量",
+      "dca_daily": 0,
+      "tp": [
+        0.1
+      ],
+      "tp_stage": 0,
+      "fallback_value": 7549,
+      "fallback_pnl": -0.056,
+      "note": "等回本后且持有满1年(赎回费0)清仓。止盈线+10%全卖（用户2026-07-30设定，替代阶梯止盈）",
+      "tp_mode": "full"
+    },
+    {
+      "name": "博时恒生医疗联接A",
+      "code": "014424",
+      "bucket": "零定投存量",
+      "dca_daily": 0,
+      "tp": [
+        0.1
+      ],
+      "tp_stage": 0,
+      "fallback_value": 6901,
+      "fallback_pnl": -0.074,
+      "note": "持有等止盈;若创新药先止盈可同步清。止盈线+10%全卖（用户2026-07-30设定，替代阶梯止盈）",
+      "tp_mode": "full"
+    },
+    {
+      "name": "易方达全球成长精选A",
+      "code": "012920",
+      "bucket": "零定投存量",
+      "dca_daily": 0,
+      "tp": [
+        0.25
+      ],
+      "tp_stage": 0,
+      "fallback_value": 6969,
+      "fallback_pnl": 0.2,
+      "note": "特殊：持仓收益率≥+25%全部卖出（用户设定）。已暂停申购只卖不买",
+      "tp_mode": "full"
+    },
+    {
+      "name": "富国天惠精选成长A",
+      "code": "161005",
+      "bucket": "零定投存量",
+      "dca_daily": 0,
+      "tp": [
+        0.1
+      ],
+      "tp_stage": 0,
+      "fallback_value": 7079,
+      "fallback_pnl": 0.016,
+      "note": "持有未满1年,等满1年赎回费降为0后清仓(与A500重叠)。止盈线+10%全卖（用户2026-07-30设定，替代阶梯止盈）",
+      "tp_mode": "full"
+    },
+    {
+      "name": "南方纳斯达克100指数A",
+      "code": "016452",
+      "bucket": "海外",
+      "dca_daily": 10,
+      "tp": [
+        0.15,
+        0.25,
+        0.35
+      ],
+      "tp_stage": 0,
+      "note": "日定投(QDII)。止盈:15/25/35%。大跌补仓:不操作(限额满)",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "天弘科创创业50ETF联接A(存量)",
+      "code": "012894",
+      "bucket": "零定投存量",
+      "dca_daily": 0,
+      "tp": [
+        0.25,
+        0.5,
+        0.8
+      ],
+      "tp_stage": 0,
+      "fallback_value": 10460,
+      "fallback_pnl": 0.007,
+      "note": "存量¥10,460。止盈25/50/80%。同指数同阈值",
+      "tp_mode": "graduated"
+    },
+    {
+      "name": "华泰红利低波ETF联接A(存量)",
+      "code": "007466",
+      "bucket": "零定投存量",
+      "dca_daily": 0,
+      "tp": [
+        0.1,
+        0.2,
+        0.3
+      ],
+      "tp_stage": 0,
+      "fallback_value": 11770,
+      "fallback_pnl": 0.0017,
+      "note": "存量¥11,770。止盈10/20/30%。同指数优先清高费率",
+      "tp_mode": "graduated"
+    }
+  ]
+}
