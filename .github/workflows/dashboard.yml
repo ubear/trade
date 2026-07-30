@@ -27,6 +27,7 @@ jobs:
         run: |
           python3 build_dashboard.py
           cp dashboard_dist.html dashboard.html
+          cp dashboard_dist.html portfolio.html
       - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
