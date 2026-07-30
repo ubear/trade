@@ -9,7 +9,7 @@ from pathlib import Path
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
 HOLDINGS = Path(__file__).parent / "holdings.json"
-OUTPUT   = Path(__file__).parent / "dashboard_data.json"
+OUTPUT   = Path(__file__).parent / "data.json"
 
 def fetch_nav_series(code: str, retries: int = 2):
     url = f"https://fund.eastmoney.com/pingzhongdata/{code}.js"

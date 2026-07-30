@@ -5,7 +5,7 @@ from pathlib import Path
 
 BASE = Path(__file__).parent
 html = BASE / "dashboard.html"
-data = BASE / "dashboard_data.json"
+data = BASE / "data.json"
 dist = BASE / "dashboard_dist.html"
 
 # 读取模板和数据
