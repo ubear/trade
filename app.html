@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>投资仪表盘</title>
+<link rel="manifest" href="/trade/manifest.json">
+<meta name="theme-color" content="#0f1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="投资仪表盘">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230f1117'/><text x='50' y='62' text-anchor='middle' fill='%234f8ff7' font-size='48' font-family='sans-serif'>📊</text></svg>">
+<style>
+:root {
+  --bg: #0f1117; --card: #1a1d27; --border: #2a2d37;
+  --text: #e1e4ea; --muted: #7f8492; --accent: #4f8ff7;
+  --green: #34d399; --red: #f87171; --orange: #fbbf24;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; background: var(--bg); color: var(--text); padding: 16px; max-width: 480px; margin: 0 auto; min-height: 100vh; }
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.header h1 { font-size: 20px; font-weight: 700; }
+.header .updated { font-size: 12px; color: var(--muted); }
+.card { background: var(--card); border-radius: 12px; padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+.summary { display: flex; justify-content: space-between; gap: 12px; }
+.summary-item { flex:1; text-align:center; }
+.summary-item .label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.summary-item .value { font-size: 22px; font-weight: 700; }
+.summary-item .sub { font-size: 13px; margin-top: 2px; }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+.warning { color: var(--orange); }
+.fund-row { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); gap: 10px; }
+.fund-row:last-child { border: none; }
+.fund-info { flex: 1; min-width: 0; }
+.fund-name { font-size: 14px; font-weight: 600; }
+.fund-meta { font-size: 11px; color: var(--muted); }
+.fund-nav { text-align: right; min-width: 56px; }
+.fund-nav .nav { font-size: 14px; }
+.fund-nav .change { font-size: 12px; }
+.fund-tp { text-align: right; min-width: 64px; font-size: 12px; }
+.tp-badge { display: inline-block; padding: 2px 8px; border-radius: 8px; font-size: 11px; }
+.tp-badge.safe { background: #1a2a1a; color: var(--green); }
+.tp-badge.close { background: #2a1a1a; color: var(--red); }
+.tp-badge.warn { background: #2a2010; color: var(--orange); }
+.alert { padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; }
+.alert.danger { background: #2a1a1a; border: 1px solid #4a2020; color: var(--red); }
+.alert.info { background: #1a202a; border: 1px solid #202a4a; color: var(--accent); }
+.allocation { display: flex; gap: 8px; margin-top: 12px; }
+.bucket-bar { height: 8px; border-radius: 4px; flex: none; }
+.bucket-legend { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: var(--muted); }
+.bucket-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.defense { background: var(--green); }
+.attack { background: var(--red); }
+.neutral { background: var(--accent); }
+.refresh { font-size: 12px; color: var(--accent); cursor: pointer; }
+.empty { text-align: center; color: var(--muted); padding: 20px; font-size: 13px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📊 投资仪表盘</h1>
+  <span class="updated" id="updateTime">--</span>
+</div>
+
+<div class="card" id="summaryCard"></div>
+<div class="card" id="allocationCard"></div>
+<div class="card" id="alertsCard" style="display:none"></div>
+<div class="card" id="fundsCard"></div>
+
+<script>
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/trade/sw.js');
+
+
+    // {"updated": "2026-07-30", "total_value": 80490.0, "total_cost": 80124.0, "total_pnl_pct": 0.004572, "dca_daily_total": 920, "funds": [{"name": "中证A500联接A", "code": "022430", "bucket": "核心", "nav": 1.0, "nav_date": "2024-10-31", "day_change": 0.0002, "week_change": 0.020825, "volatility": 0.1634, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 200, "tp": [], "tp_mode": "graduated", "tp_next": null, "tp_distance": null, "tp_triggered": 0}, {"name": "A股红利低波ETF联接A", "code": "020602", "bucket": "红利", "nav": 1.0, "nav_date": "2024-03-12", "day_change": 0.0, "week_change": -0.001298, "volatility": 0.1715, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.1, 0.2, 0.3], "tp_mode": "graduated", "tp_next": 0.1, "tp_distance": null, "tp_triggered": 0}, {"name": "摩根标普港股通低波红利ETF联接A", "code": "024772", "bucket": "红利", "nav": 1.0, "nav_date": "2025-09-23", "day_change": 0.002506, "week_change": -0.02648, "volatility": 0.1258, "value": 29762.0, "cost": 29762.0, "pnl_pct": 0.0, "dca_daily": 100, "tp": [0.1, 0.15, 0.25], "tp_mode": "graduated", "tp_next": 0.1, "tp_distance": 0.1, "tp_triggered": 0}, {"name": "恒生科技联接A", "code": "013127", "bucket": "科技", "nav": 1.0, "nav_date": "2021-10-26", "day_change": 0.010611, "week_change": 0.014199, "volatility": 0.4526, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.2, 0.4, 0.6], "tp_mode": "graduated", "tp_next": 0.2, "tp_distance": null, "tp_triggered": 0}, {"name": "创新药精选50ETF联接A", "code": "014564", "bucket": "科技", "nav": 1.0, "nav_date": "2022-05-06", "day_change": 0.0, "week_change": -0.018068, "volatility": 0.2696, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.2, 0.4, 0.8], "tp_mode": "graduated", "tp_next": 0.2, "tp_distance": null, "tp_triggered": 0}, {"name": "科创创业50联接A", "code": "013304", "bucket": "科技", "nav": 1.0, "nav_date": "2021-08-24", "day_change": 0.0007, "week_change": 0.006036, "volatility": 0.2427, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.25, 0.5, 0.8], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": null, "tp_triggered": 0}, {"name": "建信纳斯达克100A", "code": "539001", "bucket": "海外", "nav": 1.0, "nav_date": "2010-09-14", "day_change": 0.0, "week_change": -0.000999, "volatility": 0.1662, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.15, 0.25, 0.35], "tp_mode": "graduated", "tp_next": 0.15, "tp_distance": null, "tp_triggered": 0}, {"name": "博时标普500ETF联接A", "code": "050025", "bucket": "海外", "nav": 1.0, "nav_date": "2012-06-14", "day_change": 0.0, "week_change": 0.0001, "volatility": 0.1216, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 0, "tp": [0.25, 0.45, 0.65], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": null, "tp_triggered": 0}, {"name": "华夏纳斯达克100联接A", "code": "015299", "bucket": "海外", "nav": 1.0, "nav_date": "2022-04-14", "day_change": 0.0002, "week_change": 0.010714, "volatility": 0.2728, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 0, "tp": [0.25, 0.45, 0.65], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": null, "tp_triggered": 0}, {"name": "广发全球医疗A", "code": "000369", "bucket": "海外", "nav": 1.0, "nav_date": "2013-12-10", "day_change": -0.000999, "week_change": -0.00892, "volatility": 0.1036, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.15, 0.2, 0.25], "tp_mode": "graduated", "tp_next": 0.15, "tp_distance": null, "tp_triggered": 0}, {"name": "易方达蓝筹精选(张坤)", "code": "005827", "bucket": "存量", "nav": 1.0, "nav_date": "2018-09-05", "day_change": 0.001402, "week_change": 0.002808, "volatility": 0.2213, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 10, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": null, "tp_triggered": 0}, {"name": "中欧红利优享A", "code": "004814", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2018-04-19", "day_change": 0.0, "week_change": -0.002991, "volatility": 0.2322, "value": 7549.0, "cost": 7997.0, "pnl_pct": -0.056, "dca_daily": 0, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": 0.156, "tp_triggered": 0}, {"name": "博时恒生医疗联接A", "code": "014424", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2021-12-28", "day_change": 0.0, "week_change": -0.01536, "volatility": 0.4236, "value": 6901.0, "cost": 7452.0, "pnl_pct": -0.074, "dca_daily": 0, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": 0.174, "tp_triggered": 0}, {"name": "易方达全球成长精选A", "code": "012920", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2022-01-11", "day_change": 0.0, "week_change": 0.007151, "volatility": 0.1556, "value": 6969.0, "cost": 5808.0, "pnl_pct": 0.2, "dca_daily": 0, "tp": [0.25], "tp_mode": "full", "tp_next": 0.25, "tp_distance": 0.05, "tp_triggered": 0}, {"name": "富国天惠精选成长A", "code": "161005", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2005-11-16", "day_change": -0.0006, "week_change": -0.0006, "volatility": 0.2086, "value": 7079.0, "cost": 6968.0, "pnl_pct": 0.016, "dca_daily": 0, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": 0.084, "tp_triggered": 0}, {"name": "南方纳斯达克100指数A", "code": "016452", "bucket": "海外", "nav": 1.0, "nav_date": "2022-11-29", "day_change": 0.0, "week_change": 0.004016, "volatility": 0.1663, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 10, "tp": [0.15, 0.25, 0.35], "tp_mode": "graduated", "tp_next": 0.15, "tp_distance": null, "tp_triggered": 0}, {"name": "天弘科创创业50ETF联接A(存量)", "code": "012894", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2021-07-16", "day_change": 0.0001, "week_change": -0.009116, "volatility": 0.2535, "value": 10460.0, "cost": 10387.0, "pnl_pct": 0.007, "dca_daily": 0, "tp": [0.25, 0.5, 0.8], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": 0.243, "tp_triggered": 0}, {"name": "华泰红利低波ETF联接A(存量)", "code": "007466", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2019-07-15", "day_change": -0.0003, "week_change": 0.00553, "volatility": 0.1799, "value": 11770.0, "cost": 11750.0, "pnl_pct": 0.0017, "dca_daily": 0, "tp": [0.1, 0.2, 0.3], "tp_mode": "graduated", "tp_next": 0.1, "tp_distance": 0.0983, "tp_triggered": 0}], "alerts": [{"type": "tp_close", "fund": "易方达全球成长精选A", "message": "易方达全球成长精选A 距止盈5.0% 当前+20.0% 下档+25%"}]} will be replaced by build_dashboard.py with actual JSON
+    const data = {"updated": "2026-07-30", "total_value": 80490.0, "total_cost": 80124.0, "total_pnl_pct": 0.004572, "dca_daily_total": 920, "funds": [{"name": "中证A500联接A", "code": "022430", "bucket": "核心", "nav": 1.0, "nav_date": "2024-10-31", "day_change": 0.0002, "week_change": 0.020825, "volatility": 0.1634, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 200, "tp": [], "tp_mode": "graduated", "tp_next": null, "tp_distance": null, "tp_triggered": 0}, {"name": "A股红利低波ETF联接A", "code": "020602", "bucket": "红利", "nav": 1.0, "nav_date": "2024-03-12", "day_change": 0.0, "week_change": -0.001298, "volatility": 0.1715, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.1, 0.2, 0.3], "tp_mode": "graduated", "tp_next": 0.1, "tp_distance": null, "tp_triggered": 0}, {"name": "摩根标普港股通低波红利ETF联接A", "code": "024772", "bucket": "红利", "nav": 1.0, "nav_date": "2025-09-23", "day_change": 0.002506, "week_change": -0.02648, "volatility": 0.1258, "value": 29762.0, "cost": 29762.0, "pnl_pct": 0.0, "dca_daily": 100, "tp": [0.1, 0.15, 0.25], "tp_mode": "graduated", "tp_next": 0.1, "tp_distance": 0.1, "tp_triggered": 0}, {"name": "恒生科技联接A", "code": "013127", "bucket": "科技", "nav": 1.0, "nav_date": "2021-10-26", "day_change": 0.010611, "week_change": 0.014199, "volatility": 0.4526, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.2, 0.4, 0.6], "tp_mode": "graduated", "tp_next": 0.2, "tp_distance": null, "tp_triggered": 0}, {"name": "创新药精选50ETF联接A", "code": "014564", "bucket": "科技", "nav": 1.0, "nav_date": "2022-05-06", "day_change": 0.0, "week_change": -0.018068, "volatility": 0.2696, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.2, 0.4, 0.8], "tp_mode": "graduated", "tp_next": 0.2, "tp_distance": null, "tp_triggered": 0}, {"name": "科创创业50联接A", "code": "013304", "bucket": "科技", "nav": 1.0, "nav_date": "2021-08-24", "day_change": 0.0007, "week_change": 0.006036, "volatility": 0.2427, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.25, 0.5, 0.8], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": null, "tp_triggered": 0}, {"name": "建信纳斯达克100A", "code": "539001", "bucket": "海外", "nav": 1.0, "nav_date": "2010-09-14", "day_change": 0.0, "week_change": -0.000999, "volatility": 0.1662, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.15, 0.25, 0.35], "tp_mode": "graduated", "tp_next": 0.15, "tp_distance": null, "tp_triggered": 0}, {"name": "博时标普500ETF联接A", "code": "050025", "bucket": "海外", "nav": 1.0, "nav_date": "2012-06-14", "day_change": 0.0, "week_change": 0.0001, "volatility": 0.1216, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 0, "tp": [0.25, 0.45, 0.65], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": null, "tp_triggered": 0}, {"name": "华夏纳斯达克100联接A", "code": "015299", "bucket": "海外", "nav": 1.0, "nav_date": "2022-04-14", "day_change": 0.0002, "week_change": 0.010714, "volatility": 0.2728, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 0, "tp": [0.25, 0.45, 0.65], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": null, "tp_triggered": 0}, {"name": "广发全球医疗A", "code": "000369", "bucket": "海外", "nav": 1.0, "nav_date": "2013-12-10", "day_change": -0.000999, "week_change": -0.00892, "volatility": 0.1036, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 100, "tp": [0.15, 0.2, 0.25], "tp_mode": "graduated", "tp_next": 0.15, "tp_distance": null, "tp_triggered": 0}, {"name": "易方达蓝筹精选(张坤)", "code": "005827", "bucket": "存量", "nav": 1.0, "nav_date": "2018-09-05", "day_change": 0.001402, "week_change": 0.002808, "volatility": 0.2213, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 10, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": null, "tp_triggered": 0}, {"name": "中欧红利优享A", "code": "004814", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2018-04-19", "day_change": 0.0, "week_change": -0.002991, "volatility": 0.2322, "value": 7549.0, "cost": 7997.0, "pnl_pct": -0.056, "dca_daily": 0, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": 0.156, "tp_triggered": 0}, {"name": "博时恒生医疗联接A", "code": "014424", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2021-12-28", "day_change": 0.0, "week_change": -0.01536, "volatility": 0.4236, "value": 6901.0, "cost": 7452.0, "pnl_pct": -0.074, "dca_daily": 0, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": 0.174, "tp_triggered": 0}, {"name": "易方达全球成长精选A", "code": "012920", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2022-01-11", "day_change": 0.0, "week_change": 0.007151, "volatility": 0.1556, "value": 6969.0, "cost": 5808.0, "pnl_pct": 0.2, "dca_daily": 0, "tp": [0.25], "tp_mode": "full", "tp_next": 0.25, "tp_distance": 0.05, "tp_triggered": 0}, {"name": "富国天惠精选成长A", "code": "161005", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2005-11-16", "day_change": -0.0006, "week_change": -0.0006, "volatility": 0.2086, "value": 7079.0, "cost": 6968.0, "pnl_pct": 0.016, "dca_daily": 0, "tp": [0.1], "tp_mode": "full", "tp_next": 0.1, "tp_distance": 0.084, "tp_triggered": 0}, {"name": "南方纳斯达克100指数A", "code": "016452", "bucket": "海外", "nav": 1.0, "nav_date": "2022-11-29", "day_change": 0.0, "week_change": 0.004016, "volatility": 0.1663, "value": 0.0, "cost": 0.0, "pnl_pct": null, "dca_daily": 10, "tp": [0.15, 0.25, 0.35], "tp_mode": "graduated", "tp_next": 0.15, "tp_distance": null, "tp_triggered": 0}, {"name": "天弘科创创业50ETF联接A(存量)", "code": "012894", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2021-07-16", "day_change": 0.0001, "week_change": -0.009116, "volatility": 0.2535, "value": 10460.0, "cost": 10387.0, "pnl_pct": 0.007, "dca_daily": 0, "tp": [0.25, 0.5, 0.8], "tp_mode": "graduated", "tp_next": 0.25, "tp_distance": 0.243, "tp_triggered": 0}, {"name": "华泰红利低波ETF联接A(存量)", "code": "007466", "bucket": "零定投存量", "nav": 1.0, "nav_date": "2019-07-15", "day_change": -0.0003, "week_change": 0.00553, "volatility": 0.1799, "value": 11770.0, "cost": 11750.0, "pnl_pct": 0.0017, "dca_daily": 0, "tp": [0.1, 0.2, 0.3], "tp_mode": "graduated", "tp_next": 0.1, "tp_distance": 0.0983, "tp_triggered": 0}], "alerts": [{"type": "tp_close", "fund": "易方达全球成长精选A", "message": "易方达全球成长精选A 距止盈5.0% 当前+20.0% 下档+25%"}]};
+    if (data === null) {
+      document.getElementById('fundsCard').innerHTML = '<div class="empty">数据加载失败 — 运行 python3 portfolio_dashboard.py 生成数据</div>';
+      return;
+    }
+    render(data);
+  }
+}
+
+function pct(v) {
+  if (v == null) return '--';
+  return (v * 100).toFixed(1) + '%';
+}
+
+function money(v) {
+  if (!v || v === 0) return '--';
+  if (v >= 10000) return '¥' + (v / 10000).toFixed(1) + '万';
+  return '¥' + v.toLocaleString();
+}
+
+function render(data) {
+  document.getElementById('updateTime').textContent = '更新 ' + data.updated;
+
+  // ---- 总览 ----
+  const totalV = data.total_value || 0;
+  const totalPnl = data.total_pnl_pct || 0;
+  const pnlClass = totalPnl >= 0 ? 'positive' : 'negative';
+  document.getElementById('summaryCard').innerHTML = `
+    <div class="summary">
+      <div class="summary-item">
+        <div class="label">总市值</div>
+        <div class="value">${money(totalV)}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">总收益</div>
+        <div class="value ${pnlClass}">${totalPnl >= 0 ? '+' : ''}${pct(totalPnl)}</div>
+      </div>
+      <div class="summary-item">
+        <div class="label">日定投</div>
+        <div class="value">¥${data.dca_daily_total}</div>
+        <div class="sub">${data.funds.filter(f => f.dca_daily > 0).length}只定投中</div>
+      </div>
+    </div>`;
+
+  // ---- 配置 (攻/防) ----
+  const dcaFunds = data.funds.filter(f => f.dca_daily > 0);
+  // 分类: 科技进攻 vs 红利/宽基/医疗防御
+  const attackNames = ['恒生科技','创新药','科创创业50','建信纳斯达克','南方纳指','天弘科创'];
+  const defenseNames = ['中证A500','红利低波','港股通低波红利','广发全球医疗'];
+  let attackAmt = 0, defenseAmt = 0;
+  dcaFunds.forEach(f => {
+    const isAttack = attackNames.some(n => f.name.includes(n));
+    if (isAttack) attackAmt += f.dca_daily; else defenseAmt += f.dca_daily;
+  });
+  const totalDcaAmt = attackAmt + defenseAmt || 1;
+  const attackPct = Math.round(attackAmt / totalDcaAmt * 100);
+  const defensePct = 100 - attackPct;
+  document.getElementById('allocationCard').innerHTML = `
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">DCA配置</div>
+    <div class="allocation">
+      <div class="bucket-bar attack" style="width:${attackPct}%"></div>
+      <div class="bucket-bar defense" style="width:${defensePct}%"></div>
+    </div>
+    <div class="bucket-legend">
+      <span><span class="bucket-dot attack"></span>进攻 ${attackPct}%</span>
+      <span><span class="bucket-dot defense"></span>防御 ${defensePct}%</span>
+    </div>`;
+
+  // ---- 告警 ----
+  const alertsDiv = document.getElementById('alertsCard');
+  if (data.alerts && data.alerts.length > 0) {
+    alertsDiv.style.display = 'block';
+    alertsDiv.innerHTML = data.alerts.map(a => 
+      `<div class="alert ${a.type === 'tp_close' ? 'danger' : 'info'}">⚠️ ${a.message}</div>`
+    ).join('');
+  } else {
+    alertsDiv.style.display = 'none';
+  }
+
+  // ---- 基金列表 ----
+  const activeFunds = data.funds.filter(f => f.dca_daily > 0 || f.value > 0);
+  const rows = activeFunds.map(f => {
+    const dc = f.day_change || 0;
+    const dcClass = dc >= 0 ? 'positive' : 'negative';
+    const pnl = f.pnl_pct;
+    const pnlClass = pnl != null ? (pnl >= 0 ? 'positive' : 'negative') : '';
+    // 止盈状态
+    let tpHtml = '';
+    if (f.tp_next != null) {
+      const dist = f.tp_distance;
+      let tpClass = 'safe';
+      if (dist != null && dist <= 0.05) tpClass = 'close';
+      else if (dist != null && dist <= 0.10) tpClass = 'warn';
+      const tpLabel = f.tp_mode === 'full' ? '清仓' : '止盈';
+      const distStr = dist != null ? `距${tpLabel}${(dist*100).toFixed(1)}%` : '';
+      tpHtml = `<span class="tp-badge ${tpClass}">${tpLabel}+${(f.tp_next*100).toFixed(0)}% ${distStr}</span>`;
+    }
+    return `<div class="fund-row">
+      <div class="fund-info">
+        <div class="fund-name">${f.name}</div>
+        <div class="fund-meta">${f.nav_date} · ${f.volatility ? '波动'+(f.volatility*100).toFixed(0)+'%' : ''}${f.bucket ? ' · '+f.bucket : ''}</div>
+      </div>
+      <div class="fund-nav">
+        <div class="nav">${f.nav > 1 ? f.nav.toFixed(4) : '--'}</div>
+        <div class="change ${dcClass}">${dc >= 0 ? '+' : ''}${pct(dc)}</div>
+      </div>
+      <div class="fund-tp">
+        ${pnl != null ? `<div class="${pnlClass}" style="font-size:14px">${pnl >= 0 ? '+' : ''}${pct(pnl)}</div>` : '<div style="font-size:12px;color:var(--muted)">--</div>'}
+        ${tpHtml}
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('fundsCard').innerHTML = `
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px">持仓明细</div>
+    ${rows || '<div class="empty">从支付宝填入 shares/avg_cost 后显示真实持仓数据</div>'}
+    <div class="empty" style="font-size:11px">💡 在 holdings.json 中填入每只基金的 shares 和 avg_cost 即可看到精确收益</div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>
