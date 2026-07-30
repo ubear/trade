@@ -72,16 +72,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; bac
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/trade/sw.js');
 
-
-    // __DATA_PLACEHOLDER__ will be replaced by build_dashboard.py with actual JSON
-    const data = __DATA_PLACEHOLDER__;
-    if (data === null) {
-      document.getElementById('fundsCard').innerHTML = '<div class="empty">数据加载失败 — 运行 python3 portfolio_dashboard.py 生成数据</div>';
-      return;
-    }
-    render(data);
-  }
-}
+// data embedded at build time — no async needed
+const data = __DATA_PLACEHOLDER__;
 
 function pct(v) {
   if (v == null) return '--';
@@ -194,7 +186,6 @@ function render(data) {
   `;
 }
 
-load();
 </script>
 </body>
 </html>
