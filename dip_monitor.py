@@ -126,7 +126,7 @@ def main():
         title = f"📉 定投监控 {ts}"
         body = "\n".join(alerts)
         try:
-            url = f"{BARK_URL}{urllib.parse.quote(title)}/{urllib.parse.quote(body)}?sound=bell"
+            url = f"{BARK_URL}{urllib.parse.quote(title, safe='')}/{urllib.parse.quote(body, safe='')}?sound=bell&isArchive=1"
             urllib.request.urlopen(urllib.request.Request(url), timeout=5)
             print("  → Bark已推送")
         except Exception as e:
