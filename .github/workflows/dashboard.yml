@@ -23,6 +23,7 @@ jobs:
         env:
           BARK_KEY: ${{ secrets.BARK_KEY }}
           SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+        run: python3 portfolio_dashboard.py
       - name: 嵌入数据到HTML
         run: |
           python3 build_dashboard.py
