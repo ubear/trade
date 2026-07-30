@@ -22,7 +22,7 @@ jobs:
       - name: 采集数据
         env:
           BARK_KEY: ${{ secrets.BARK_KEY }}
-          PUSHDEER_KEY: ${{ secrets.PUSHDEER_KEY }}
+          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
       - name: 嵌入数据到HTML
         run: |
           python3 build_dashboard.py

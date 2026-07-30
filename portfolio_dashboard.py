@@ -8,8 +8,8 @@ from pathlib import Path
 
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
-PUSHDEER_KEY = os.environ.get("PUSHDEER_KEY", "")
-PUSHDEER_URL = f"https://api2.pushdeer.com/message/push?pushkey={PUSHDEER_KEY}&text=" if PUSHDEER_KEY else None
+SERVERCHAN_KEY = os.environ.get("SERVERCHAN_KEY", "")
+SERVERCHAN_URL = f"https://sctapi.ftqq.com/{SERVERCHAN_KEY}.send" if SERVERCHAN_KEY else None
 HOLDINGS = Path(__file__).parent / "holdings.json"
 OUTPUT   = Path(__file__).parent / "data.json"
 
@@ -170,7 +170,6 @@ if __name__ == "__main__":
         if data["alerts"]: params += "&level=critical&volume=5"
         try_push("Bark", lambda: urllib.request.urlopen(urllib.request.Request(
             f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?{params}"), timeout=5))
-    
-    if PUSHDEER_URL:
-        try_push("PushDeer", lambda: urllib.request.urlopen(urllib.request.Request(
-            PUSHDEER_URL + ulp.quote(f"{title}\n{body}", safe='')), timeout=5))
+    if SERVERCHAN_URL:
+        try_push("Server酱", lambda: urllib.request.urlopen(urllib.request.Request(
+            SERVERCHAN_URL, data=ulp.urlencode({"title": title, "desp": body}).encode()), timeout=5))

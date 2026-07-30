@@ -8,8 +8,8 @@ import json, urllib.request, os, sys, datetime, time, urllib.parse as ulp
 
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
-PUSHDEER_KEY = os.environ.get("PUSHDEER_KEY", "")
-PUSHDEER_URL = f"https://api2.pushdeer.com/message/push?pushkey={PUSHDEER_KEY}&text=" if PUSHDEER_KEY else None
+SERVERCHAN_KEY = os.environ.get("SERVERCHAN_KEY", "")
+SERVERCHAN_URL = f"https://sctapi.ftqq.com/{SERVERCHAN_KEY}.send" if SERVERCHAN_KEY else None
 # 基金→指数映射 + 大跌阈值
 FUNDS = {
     "恒科":       (100, "124.HSTECH",   -5.0, "replace", "live"),
@@ -117,16 +117,14 @@ def main():
             print("  → Bark已推送")
         except Exception as e:
             print(f"  → Bark失败: {e}")
-    
-    # PushDeer推送
-    if PUSHDEER_URL and not dry:
+    # Server酱推送
+    if SERVERCHAN_URL and not dry:
         try:
-            text = f"{title}\n{body}"
-            url = PUSHDEER_URL + ulp.quote(text, safe='')
-            urllib.request.urlopen(urllib.request.Request(url), timeout=5)
-            print("  → PushDeer已推送")
+            data = ulp.urlencode({"title": title, "desp": body}).encode()
+            urllib.request.urlopen(urllib.request.Request(SERVERCHAN_URL, data=data), timeout=5)
+            print("  → Server酱已推送")
         except Exception as e:
-            print(f"  → PushDeer失败: {e}")
+            print(f"  → Server酱失败: {e}")
     elif dry:
         print("  [dry-run] 跳过推送")
 
