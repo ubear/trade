@@ -72,13 +72,14 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', sans-serif; bac
 <script>
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('/trade/sw.js');
 
-async function load() {
-  try {
-    const resp = await fetch('/trade/dashboard_data.json?t=' + Date.now());
-    const data = await resp.json();
+
+    // __DATA_PLACEHOLDER__ will be replaced by build_dashboard.py with actual JSON
+    const data = __DATA_PLACEHOLDER__;
+    if (data === null) {
+      document.getElementById('fundsCard').innerHTML = '<div class="empty">数据加载失败 — 运行 python3 portfolio_dashboard.py 生成数据</div>';
+      return;
+    }
     render(data);
-  } catch(e) {
-    document.getElementById('fundsCard').innerHTML = '<div class="empty">数据加载失败 — 运行 python3 portfolio_dashboard.py 生成数据</div>';
   }
 }
 
