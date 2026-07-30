@@ -74,7 +74,7 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
 
 async function load() {
   try {
-    const resp = await fetch('dashboard_data.json');
+    const resp = await fetch('dashboard_data.json?t=' + Date.now());
     const data = await resp.json();
     render(data);
   } catch(e) {
