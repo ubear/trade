@@ -157,7 +157,7 @@ if __name__ == "__main__":
             body = summary
             title = "📊 每日汇总"
         try:
-            url = f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?group={ulp.quote('投资仪表盘', safe='')}"
+            url = f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?group={ulp.quote('投资仪表盘', safe='')}&sound=bell&isArchive=1"
             urllib.request.urlopen(urllib.request.Request(url), timeout=5)
             print(f"  → Bark推送成功")
         except Exception as e:
