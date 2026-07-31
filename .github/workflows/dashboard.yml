@@ -22,7 +22,7 @@ jobs:
       - name: 采集数据
         env:
           BARK_KEY: ${{ secrets.BARK_KEY }}
-          SERVERCHAN_KEY: ${{ secrets.SERVERCHAN_KEY }}
+          FEISHU_URL: ${{ secrets.FEISHU_URL }}
         run: python3 portfolio_dashboard.py
       - name: 嵌入数据到HTML
         run: |

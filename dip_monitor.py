@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-"""大跌监控 + Bark/PushDeer双推送
+"""大跌监控 + Bark/飞书双推送
 每天14:50运行, 检查指数/基金是否触发补仓阈值
 用法: python3 dip_monitor.py [--dry-run]
-配置: BARK_KEY + PUSHDEER_KEY 环境变量
+配置: BARK_KEY + FEISHU_URL 环境变量
 """
 import json, urllib.request, os, sys, datetime, time, urllib.parse as ulp
 
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
-SERVERCHAN_KEY = os.environ.get("SERVERCHAN_KEY", "")
-SERVERCHAN_URL = f"https://sctapi.ftqq.com/{SERVERCHAN_KEY}.send" if SERVERCHAN_KEY else None
+FEISHU_URL = os.environ.get("FEISHU_URL", "")
 # 基金→指数映射 + 大跌阈值
 FUNDS = {
     "恒科":       (100, "124.HSTECH",   -5.0, "replace", "live"),
@@ -117,14 +116,15 @@ def main():
             print("  → Bark已推送")
         except Exception as e:
             print(f"  → Bark失败: {e}")
-    # Server酱推送
-    if SERVERCHAN_URL and not dry:
+    # 飞书推送
+    if FEISHU_URL and not dry:
         try:
-            data = ulp.urlencode({"title": title, "desp": body}).encode()
-            urllib.request.urlopen(urllib.request.Request(SERVERCHAN_URL, data=data), timeout=5)
-            print("  → Server酱已推送")
+            text = f"特别提醒\n\n{title}\n{body}"
+            data = json.dumps({"msg_type": "text", "content": {"text": text}}).encode()
+            urllib.request.urlopen(urllib.request.Request(FEISHU_URL, data=data, headers={"Content-Type": "application/json"}), timeout=5)
+            print("  → 飞书已推送")
         except Exception as e:
-            print(f"  → Server酱失败: {e}")
+            print(f"  → 飞书失败: {e}")
     elif dry:
         print("  [dry-run] 跳过推送")
 

@@ -8,8 +8,8 @@ from pathlib import Path
 
 BARK_KEY = os.environ.get("BARK_KEY", "")
 BARK_URL = f"https://api.day.app/{BARK_KEY}/" if BARK_KEY else None
-SERVERCHAN_KEY = os.environ.get("SERVERCHAN_KEY", "")
-SERVERCHAN_URL = f"https://sctapi.ftqq.com/{SERVERCHAN_KEY}.send" if SERVERCHAN_KEY else None
+FEISHU_URL = os.environ.get("FEISHU_URL", "")
+TZ = os.environ.get("TZ", "Asia/Shanghai")
 HOLDINGS = Path(__file__).parent / "holdings.json"
 OUTPUT   = Path(__file__).parent / "data.json"
 
@@ -170,6 +170,8 @@ if __name__ == "__main__":
         if data["alerts"]: params += "&level=critical&volume=5"
         try_push("Bark", lambda: urllib.request.urlopen(urllib.request.Request(
             f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?{params}"), timeout=5))
-    if SERVERCHAN_URL:
-        try_push("Server酱", lambda: urllib.request.urlopen(urllib.request.Request(
-            SERVERCHAN_URL, data=ulp.urlencode({"title": title, "desp": body}).encode()), timeout=5))
+    if FEISHU_URL:
+        text = f"特别提醒\n\n{title}\n{body}"
+        data = json.dumps({"msg_type": "text", "content": {"text": text}}).encode()
+        try_push("飞书", lambda: urllib.request.urlopen(urllib.request.Request(
+            FEISHU_URL, data=data, headers={"Content-Type": "application/json"}), timeout=5))
