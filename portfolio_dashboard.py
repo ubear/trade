@@ -171,7 +171,52 @@ if __name__ == "__main__":
         try_push("Bark", lambda: urllib.request.urlopen(urllib.request.Request(
             f"{BARK_URL}{ulp.quote(title, safe='')}/{ulp.quote(body, safe='')}?{params}"), timeout=5))
     if FEISHU_URL:
-        text = f"特别提醒\n\n{title}\n{body}"
-        data = json.dumps({"msg_type": "text", "content": {"text": text}}).encode()
+        now = datetime.datetime.now()
+        date_str = now.strftime("%m-%d 周%w").replace("周0","周日").replace("周1","周一").replace("周2","周二").replace("周3","周三").replace("周4","周四").replace("周5","周五").replace("周6","周六")
+        short = {
+            "中证A500联接A": "中证A500", "A股红利低波ETF联接A": "红利低波",
+            "摩根标普港股通低波红利ETF联接A": "港股红利", "恒生科技联接A": "恒生科技",
+            "创新药精选50ETF联接A": "创新药", "科创创业50联接A": "科创50",
+            "建信纳斯达克100A": "建信纳指", "博时标普500ETF联接A": "博时标普",
+            "华夏纳斯达克100联接A": "华夏纳指", "广发全球医疗A": "广发医疗",
+            "易方达蓝筹精选(张坤)": "易方达蓝筹", "中欧红利优享A": "中欧红利",
+            "博时恒生医疗联接A": "恒生医疗", "易方达全球成长精选A": "全球成长",
+            "富国天惠精选成长A": "富国天惠", "南方纳斯达克100指数A": "南方纳指",
+            "天弘科创创业50ETF联接A(存量)": "天弘科创50(存)", "华泰红利低波ETF联接A(存量)": "华泰红利(存)",
+        }
+        defs, atts, others = [], [], []
+        for f in data["funds"]:
+            nm = short.get(f["name"], f["name"])
+            d = f.get("daily_pct") or 0
+            pnl = f.get("pnl_pct") or 0
+            tp = f.get("tp_distance", 0) or 0
+            dca = f.get("dca_daily", 0)
+            tp_s = f"距{tp*100:.0f}%" if tp > 0 else ("永远" if tp < 0 else "-")
+            dca_s = f"¥{dca}" if dca else "-"
+            line = f"{nm:<10s} 日{d:+.2f}% 累计{pnl*100:+.2f}% {tp_s} {dca_s}"
+            cat = f.get("cat", "")
+            if cat == "defense": defs.append(line)
+            elif cat == "attack": atts.append(line)
+            else: others.append(line)
+        lines = [f"**总市值** ¥{data['total_value']:,.0f}　｜　**收益** {data['total_pnl_pct']*100:+.2f}%", "", "---"]
+        if defs:
+            pct = sum(f["dca_daily"] for f in data["funds"] if f.get("cat")=="defense")
+            lines += ["", f"🛡️ **防御仓** ({pct}¥/日)", ""] + defs
+        if atts:
+            pct = sum(f["dca_daily"] for f in data["funds"] if f.get("cat")=="attack")
+            lines += ["", f"⚔️ **进攻仓** ({pct}¥/日)", ""] + atts
+        if others:
+            lines += ["", "👀 **观察仓**", ""] + others
+        lines += ["", "---", ""]
+        if data["alerts"]:
+            for a in data["alerts"]:
+                lines.append(f"⚠️ {a['message']}")
+        card = {
+            "msg_type": "interactive",
+            "card": {
+                "header": {"title": {"tag": "plain_text", "content": f"📊 投资日报 | {date_str} 特别提醒"}, "template": "blue"},
+                "elements": [{"tag": "markdown", "content": "\n".join(lines)}]
+            }
+        }
         try_push("飞书", lambda: urllib.request.urlopen(urllib.request.Request(
-            FEISHU_URL, data=data, headers={"Content-Type": "application/json"}), timeout=5))
+            FEISHU_URL, data=json.dumps(card).encode(), headers={"Content-Type": "application/json"}), timeout=10))

@@ -1,7 +1,7 @@
 name: 仪表盘自动部署
 on:
   schedule:
-    - cron: '30 7 * * 1-5'  # 北京时间 15:30
+    - cron: '0 14 * * 1-5'  # 北京时间 22:00
   workflow_dispatch:
   push:
     paths: ['holdings.json', 'dashboard.html', 'portfolio_dashboard.py', 'build_dashboard.py']

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """大跌监控 + Bark/飞书双推送
-每天14:50运行, 检查指数/基金是否触发补仓阈值
+每天14:45运行, 检查指数/基金是否触发补仓(阈值±1%容差)
 用法: python3 dip_monitor.py [--dry-run]
-配置: BARK_KEY + FEISHU_URL 环境变量
+配置: BARK_KEY + FEISHU_URL 环境变量"""
 """
 import json, urllib.request, os, sys, datetime, time, urllib.parse as ulp
 
@@ -23,17 +23,19 @@ FUNDS = {
 # ======= 指数实时行情 ==========
 def fetch_index_realtime(secid):
     """获取指数实时涨跌幅"""
-    url = f"https://push2.eastmoney.com/api/qt/stock/get?secid={secid}&fields=f43,f170,f58"
+    url = f"https://push2.eastmoney.com/api/qt/stock/get?secid={secid}&fields=f43,f169,f58"
     headers = {"Referer": "https://quote.eastmoney.com/"}
     try:
         req = urllib.request.Request(url, headers=headers)
-        with urllib.request.urlopen(req, timeout=8) as r:
-            data = json.loads(r.read().decode('utf-8'))
-        d = data.get("data", {})
-        if d:
-            price = d.get("f43", 0) / 100 if d.get("f43") else 0
-            pct = d.get("f170", 0) / 100 if d.get("f170") else 0
-            name = d.get("f58", "")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            d = json.loads(resp.read().decode())
+        data = d.get("data") or {}
+        price = data.get("f43", 0)
+        pct = data.get("f169")
+        if pct is not None:
+            pct = round(pct / 100, 2)
+        name = data.get("f58", "")
+        if price:
             return {"price": price, "pct": pct, "name": name}
     except Exception as e:
         pass
@@ -94,15 +96,7 @@ def main():
             if fund and fund["pct"] != 0:
                 pct = fund["pct"]
                 source = "盘中实时" if freshness == "live" else "前夜收盘"
-        
-        if pct is None:
-            continue
-        
-        if pct <= threshold:
-            if mode == "replace":
-                mode_label = "⚡替代周五"
-            else:
-                mode_label = "💰额外加仓"
+        if pct <= threshold + 1.0:
             freshness_label = "" if freshness == "live" else "【QDII·前夜美股】"
             msg = f"{freshness_label}{fname} {pct:+.1f}% (阈值{threshold:+.0f}%) → {mode_label} ({source})"
             alerts.append(msg)
