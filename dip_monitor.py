@@ -3,7 +3,6 @@
 每天14:45运行, 检查指数/基金是否触发补仓(阈值±1%容差)
 用法: python3 dip_monitor.py [--dry-run]
 配置: BARK_KEY + FEISHU_URL 环境变量"""
-"""
 import json, urllib.request, os, sys, datetime, time, urllib.parse as ulp
 
 BARK_KEY = os.environ.get("BARK_KEY", "")
