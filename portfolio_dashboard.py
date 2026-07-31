@@ -105,9 +105,8 @@ def compute():
         if len(navs) >= 20:
             dr = [(navs[i] - navs[i+1]) / navs[i+1] for i in range(len(navs) - 1)]
             vol = (sum(r*r for r in dr) / len(dr)) ** 0.5 * (250 ** 0.5)
-
         funds_output.append({
-            "name": name, "code": code, "bucket": bucket,
+            "name": name, "code": code, "bucket": bucket, "cat": f.get("cat", ""),
             "nav": round(latest_nav, 4), "nav_date": latest_date,
             "day_change": round(day_change, 6), "week_change": round(week_change, 6),
             "volatility": round(vol, 4),
@@ -182,35 +181,42 @@ if __name__ == "__main__":
             "易方达蓝筹精选(张坤)": "易方达蓝筹", "中欧红利优享A": "中欧红利",
             "博时恒生医疗联接A": "恒生医疗", "易方达全球成长精选A": "全球成长",
             "富国天惠精选成长A": "富国天惠", "南方纳斯达克100指数A": "南方纳指",
-            "天弘科创创业50ETF联接A(存量)": "天弘科创50(存)", "华泰红利低波ETF联接A(存量)": "华泰红利(存)",
+            "天弘科创创业50ETF联接A(存量)": "天弘科创(存)", "华泰红利低波ETF联接A(存量)": "华泰红利(存)",
         }
-        defs, atts, others = [], [], []
+        def fmt_daily(pct):
+            if pct > 0: return f"<font color='red'>+{pct:.2f}%</font>"
+            if pct < 0: return f"<font color='green'>{pct:.2f}%</font>"
+            return f"{pct:.2f}%"
+        def fmt_total(pnl):
+            if pnl is None: return "持平"
+            if pnl > 0: return f"<font color='red'>+{pnl*100:.2f}%</font>"
+            if pnl < 0: return f"<font color='green'>{pnl*100:.2f}%</font>"
+            return "持平"
+        sections = {"defense": [], "attack": [], "watch": []}
+        section_icons = {"defense": "🛡️ **防御仓**", "attack": "⚔️ **进攻仓**", "watch": "👀 **观察仓**"}
         for f in data["funds"]:
             nm = short.get(f["name"], f["name"])
-            d = f.get("daily_pct") or 0
-            pnl = f.get("pnl_pct") or 0
-            tp = f.get("tp_distance", 0) or 0
-            dca = f.get("dca_daily", 0)
-            tp_s = f"距{tp*100:.0f}%" if tp > 0 else ("永远" if tp < 0 else "-")
-            dca_s = f"¥{dca}" if dca else "-"
-            line = f"{nm:<10s} 日{d:+.2f}% 累计{pnl*100:+.2f}% {tp_s} {dca_s}"
-            cat = f.get("cat", "")
-            if cat == "defense": defs.append(line)
-            elif cat == "attack": atts.append(line)
-            else: others.append(line)
-        lines = [f"**总市值** ¥{data['total_value']:,.0f}　｜　**收益** {data['total_pnl_pct']*100:+.2f}%", "", "---"]
-        if defs:
-            pct = sum(f["dca_daily"] for f in data["funds"] if f.get("cat")=="defense")
-            lines += ["", f"🛡️ **防御仓** ({pct}¥/日)", ""] + defs
-        if atts:
-            pct = sum(f["dca_daily"] for f in data["funds"] if f.get("cat")=="attack")
-            lines += ["", f"⚔️ **进攻仓** ({pct}¥/日)", ""] + atts
-        if others:
-            lines += ["", "👀 **观察仓**", ""] + others
-        lines += ["", "---", ""]
+            d = f.get("day_change") or 0
+            pnl = f.get("pnl_pct")
+            cat = f.get("cat", "watch")
+            line = f"- **{nm:<8s}**　　日{fmt_daily(d)}　　累计{fmt_total(pnl)}"
+            sections[cat].append(line)
+        total_pnl = data['total_pnl_pct'] * 100
+        tp_color = "red" if total_pnl > 0 else "green" if total_pnl < 0 else "grey"
+        lines = [f"**总市值** ¥{data['total_value']:,.0f}　｜　**收益** <font color='{tp_color}'>{total_pnl:+.2f}%</font>", "", "---", ""]
+        for cat in ["defense", "attack", "watch"]:
+            if sections[cat]:
+                lines.append(section_icons[cat])
+                lines.extend(sections[cat])
+                lines.append("")
+        # 提醒板块
         if data["alerts"]:
+            lines.append("---")
+            lines.append("")
+            lines.append("⚠️ **提醒**")
+            lines.append("")
             for a in data["alerts"]:
-                lines.append(f"⚠️ {a['message']}")
+                lines.append(f"- {a['message']}")
         card = {
             "msg_type": "interactive",
             "card": {
