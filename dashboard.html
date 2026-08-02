@@ -170,7 +170,7 @@ function render(data) {
         <div class="fund-meta">${f.nav_date} · ${f.volatility ? '波动'+(f.volatility*100).toFixed(0)+'%' : ''}${f.bucket ? ' · '+f.bucket : ''}</div>
       </div>
       <div class="fund-nav">
-        <div class="nav">${f.nav > 1 ? f.nav.toFixed(4) : '--'}</div>
+        <div class="nav">${f.nav.toFixed(4)}</div>
         <div class="change ${dcClass}">${dc >= 0 ? '+' : ''}${pct(dc)}</div>
       </div>
       <div class="fund-tp">
