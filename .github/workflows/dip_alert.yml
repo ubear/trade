@@ -19,3 +19,4 @@ jobs:
           BARK_KEY: ${{ secrets.BARK_KEY }}
           FEISHU_URL: ${{ secrets.FEISHU_URL }}
           TZ: Asia/Shanghai
+        run: python3 dip_monitor.py
