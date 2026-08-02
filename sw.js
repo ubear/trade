@@ -14,14 +14,26 @@ self.addEventListener('activate', e => {
   );
 });
 
-// stale-while-revalidate: 先返回缓存, 同时后台拉新并更新缓存
 self.addEventListener('fetch', e => {
+  const req = e.request;
+  // HTML 导航: network-first — 保证看到当天最新净值, 断网才回退缓存
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(resp => {
+        const clone = resp.clone();
+        caches.open(CACHE).then(c => c.put(req, clone));
+        return resp;
+      }).catch(() => caches.match(req).then(r => r || caches.match('/trade/')))
+    );
+    return;
+  }
+  // 其余: stale-while-revalidate
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      const network = fetch(e.request).then(resp => {
+    caches.match(req).then(cached => {
+      const network = fetch(req).then(resp => {
         if (resp && resp.ok) {
           const clone = resp.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
+          caches.open(CACHE).then(c => c.put(req, clone));
         }
         return resp;
       }).catch(() => cached);

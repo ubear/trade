@@ -6,7 +6,7 @@ on:
     - cron: '0 13 * * 1-5'  # 北京时间 21:00 触发
   workflow_dispatch:
   push:
-    paths: ['holdings.json', 'dashboard.html', 'app.html', 'index.html', 'portfolio_dashboard.py', 'build_dashboard.py']
+    paths: ['holdings.json', 'dashboard.html', 'app.html', 'index.html', 'sw.js', 'portfolio_dashboard.py', 'build_dashboard.py']
 
 jobs:
   deploy:
