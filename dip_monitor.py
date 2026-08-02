@@ -95,6 +95,9 @@ def main():
             if fund and fund["pct"] != 0:
                 pct = fund["pct"]
                 source = "盘中实时" if freshness == "live" else "前夜收盘"
+        if pct is None:
+            print(f"  - {fname}: 无行情数据, 跳过")
+            continue
         if pct <= threshold + 1.0:
             freshness_label = "" if freshness == "live" else "【QDII·前夜美股】"
             msg = f"{freshness_label}{fname} {pct:+.1f}% (阈值{threshold:+.0f}%) → {mode_label} ({source})"
