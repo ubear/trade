@@ -1,7 +1,9 @@
 name: 仪表盘自动部署
 on:
   schedule:
-    - cron: '0 14 * * 1-5'  # 北京时间 22:00
+    # GitHub Actions 的 schedule 使用 UTC, 且触发常有 0-2h 延迟(实测 7-31 延迟2h2m)
+    # UTC 13:00 = 北京 21:00 触发, 期望推送 21:00-23:00 送达(原 14:00 被延迟拖到 0 点)
+    - cron: '0 13 * * 1-5'  # 北京时间 21:00 触发
   workflow_dispatch:
   push:
     paths: ['holdings.json', 'dashboard.html', 'portfolio_dashboard.py', 'build_dashboard.py']
@@ -23,6 +25,7 @@ jobs:
         env:
           BARK_KEY: ${{ secrets.BARK_KEY }}
           FEISHU_URL: ${{ secrets.FEISHU_URL }}
+          TZ: Asia/Shanghai  # runner 默认 UTC, 不加则 0 点跑时日期/星期错一天
         run: python3 portfolio_dashboard.py
       - name: 嵌入数据到HTML
         run: |
