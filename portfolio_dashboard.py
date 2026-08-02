@@ -63,12 +63,13 @@ def compute():
             funds_output.append({"name": name, "code": code, "error": "no data"})
             continue
 
-        latest_nav = series[0]["nav"]
-        latest_date = series[0]["date"]
-        prev_nav = series[1]["nav"] if len(series) > 1 else latest_nav
+        # 注意: pingzhongdata 的 Data_netWorthTrend 按时间升序(最旧在前), 最新在尾部
+        latest_nav = series[-1]["nav"]
+        latest_date = series[-1]["date"]
+        prev_nav = series[-2]["nav"] if len(series) > 1 else latest_nav
         day_change = (latest_nav - prev_nav) / prev_nav if prev_nav else 0
         week_idx = min(5, len(series) - 1)
-        week_prev = series[week_idx]["nav"]
+        week_prev = series[-1 - week_idx]["nav"]
         week_change = (latest_nav - week_prev) / week_prev if week_prev else 0
 
         # -- 估值 --
@@ -99,11 +100,11 @@ def compute():
             tp_next = tp_list[0]
             if pnl_pct is not None: tp_distance = max(0, tp_next - pnl_pct)
 
-        # -- 波动率 --
-        navs = [s["nav"] for s in series[:min(250, len(series))]]
+        # -- 波动率 (取最新250个交易日, 升序) --
+        navs = [s["nav"] for s in series[-min(250, len(series)):]]
         vol = 0.0
         if len(navs) >= 20:
-            dr = [(navs[i] - navs[i+1]) / navs[i+1] for i in range(len(navs) - 1)]
+            dr = [(navs[i+1] - navs[i]) / navs[i] for i in range(len(navs) - 1)]
             vol = (sum(r*r for r in dr) / len(dr)) ** 0.5 * (250 ** 0.5)
         funds_output.append({
             "name": name, "code": code, "bucket": bucket, "cat": f.get("cat", ""),
